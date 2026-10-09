@@ -148,7 +148,7 @@ Common：lyn_log、lyn_info、lyn_meta、lyn_can、serialib、kalman_filter、im
 
 部分硬件驱动和 SDK 需要单独安装并配置环境变量。
 
-日志系统默认关闭控制台打印，可通过 logger.run(filename, true) 开启。
+日志系统默认关闭控制台打印，可通过 logger.run(filename, true) 开启。建议使用tail -f 文件名查看日志。
 
 许可证
 本项目仅供学习与研究使用。涉及第三方库请遵循其各自的开源许可证。
