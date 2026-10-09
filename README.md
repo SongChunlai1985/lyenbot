@@ -1,93 +1,159 @@
-# lyenbot
+Lyenbot
+一个基于 C++17 的机器人实时控制系统，集成了 IMU、CAN 总线、视觉感知、ONNX 推理、步态控制与 OpenGL 可视化。项目采用模块化设计，适用于人形机器人或足式机器人的感知-规划-控制-输出闭环。
 
+功能特性
+多传感器输入
 
+Hi12 IMU 串口数据读取（921600 波特率）
 
-## Getting started
+CAN 总线电机通信（支持 can0 ~ can3，1 Mbps）
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Orbbec 深度相机（点云 + 彩色图 + IMU）
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Livox Mid360 激光雷达点云
 
-## Add your files
+RealSense 深度相机
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+状态估计与重建
 
-```
-cd existing_repo
-git remote add origin http://gitlab/songchunlai/lyenbot.git
-git branch -M main
-git push -uf origin main
-```
+IMU 数据卡尔曼滤波、互补滤波、Madgwick 姿态融合
 
-## Integrate with your tools
+点云重建与坐标变换
 
-* [Set up project integrations](http://gitlab/songchunlai/lyenbot/-/settings/integrations)
+规划与控制
 
-## Collaborate with your team
+直接控制（关节角度直接下发）
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+基于 ONNX 的神经网络推理控制
 
-## Test and Deploy
+人形机器人行走步态生成（Walking 模块）
 
-Use the built-in continuous integration in GitLab.
+踝关节并联机构运动学正逆解
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+平衡控制（陀螺仪反馈）
 
-***
+输出与可视化
 
-# Editing this README
+OpenGL 3D 可视化（点云、机器人模型、关节坐标轴、IMU 轨迹）
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+轴角度输出、电机状态监控
 
-## Suggestions for a good README
+基础组件
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+线程安全日志系统
 
-## Name
-Choose a self-explaining name for your project.
+基于 lyn_info 的模块间数据交换与状态机
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+URDF 解析与机器人运动学树构建
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+串口通信（serialib）
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+CAN 通信封装
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+目录结构
+text
+lyenbot/
+├── CMakeLists.txt              # 根 CMake，生成 lyenbot 可执行文件
+├── main.cpp                    # 程序入口
+├── app/                        # 应用主框架
+│   ├── CMakeLists.txt
+│   ├── app.cpp / app.h         # 主循环，调度 Inputs/Plan/Control/Outputs
+│   ├── common/                 # 通用组件（日志、信息、元数据、CAN、串口等）
+│   ├── inputs/                 # 输入模块（IMU、CAN、视觉）
+│   ├── plan/                   # 规划模块（重建、ONNX 推理等）
+│   ├── control/                # 控制模块（直接控制、行走控制）
+│   └── outputs/                # 输出模块（OpenGL、轴角度）
+└── ...                         # 其他源文件与配置
+依赖项
+编译环境：CMake ≥ 3.10，支持 C++17 的编译器（GCC / Clang）
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+第三方库：
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+OpenCV（core, imgproc, dnn, calib3d, highgui）
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+GLFW3
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+GLEW
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+GLM
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+ONNX Runtime 或 OpenCV DNN（CPU / CUDA）
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+Orbbec SDK
 
-## License
-For open source projects, say how it is licensed.
+Livox SDK
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+RealSense SDK
+
+serialib
+
+pthread
+
+硬件：
+
+Hi12 IMU（串口）
+
+CAN 总线电机驱动器
+
+Orbbec 深度相机
+
+Livox Mid360
+
+RealSense 相机
+
+构建
+bash
+git clone <repository-url>
+cd lyenbot
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+默认 THIRDPARTY_DIR 设置为 /home/lyenbot/depends_x86，如需修改请编辑根 CMakeLists.txt。
+
+运行
+bash
+./lyenbot
+程序启动后会依次初始化输入、规划、控制、输出模块，并进入 500 μs 周期的实时循环。
+
+需要提前配置好 CAN 接口、串口权限及设备节点。
+
+若需显示可视化窗口或调试图像，可传入参数（argc > 1）。
+
+配置与设备
+项目	默认值 / 说明
+CAN 接口	can0 ~ can3，比特率 1000000
+IMU 串口	/dev/ttyUSB0，波特率 921600
+行走配置文件	/home/lyenbot/config/Walking_config.yml
+PD 模式配置	/home/lyenbot/config/PD_mode_config.yml
+动作文件	/home/lyenbot/modles/new_control.log
+ONNX 模型	代码中 modelPath 指定
+日志文件	app.log, imu.log, can_in.log, gl.log, direct_control.log, axis_angle.log, reconstruction.log, onnx.log 等
+部分操作需要 sudo 权限（如设置 CAN 接口、修改串口属主），请根据实际环境调整。
+
+模块简介
+Inputs：imu、can_in、vision（Orbbec / Mid360 / RealSense）
+
+Plan：reconstruction（点云重建）、onnx_inference（神经网络推理）
+
+Control：direct_control（直接控制）、axis_angle（关节角度控制）
+
+Outputs：lyn_gl（OpenGL 可视化）、axis_angle（轴角度输出）
+
+Common：lyn_log、lyn_info、lyn_meta、lyn_can、serialib、kalman_filter、imu_filter_madgwick、imu_complementary_filter 等
+
+注意事项
+项目注释中提到“有 IMU 才能启动”，请确保 IMU 设备正常连接。
+
+实时循环周期为 500 μs，若单帧耗时超过 50 μs 会记录日志。
+
+部分硬件驱动和 SDK 需要单独安装并配置环境变量。
+
+日志系统默认关闭控制台打印，可通过 logger.run(filename, true) 开启。
+
+许可证
+本项目仅供学习与研究使用。涉及第三方库请遵循其各自的开源许可证。
+
+README 根据项目源码自动生成，具体细节请以实际代码为准。
+
+捐赠
+BTC: 13SongiriQuWoFhoimsVS21CyaTxozKBVA
